@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, OnDestroy, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import * as faceapi from 'face-api.js';
 
 @Component({
@@ -18,23 +18,19 @@ export class Camera implements OnInit, OnDestroy {
   detectionInterval: any;
   loadError: string = '';
 
+  constructor(private cdr: ChangeDetectorRef) {}
+
   async ngOnInit() {
     await this.loadModels();
   }
 
   async loadModels() {
     try {
-      // Inicialização segura do motor matemático (com fallback para CPU se o WebGL falhar)
-      try {
-        await faceapi.tf.setBackend('webgl');
-        await faceapi.tf.ready();
-        console.log("Motor WebGL inicializado com sucesso.");
-      } catch (backendError) {
-        console.warn("WebGL não suportado pelo navegador ou placa de vídeo. Usando CPU...", backendError);
-        await faceapi.tf.setBackend('cpu');
-        await faceapi.tf.ready();
-        console.log("Motor CPU inicializado com sucesso.");
-      }
+      // Retornando para auto-detecção original do face-api (que usa WebGL por padrão)
+      // pois descobrimos que o problema real pode ser atualização de tela (Change Detection).
+      await faceapi.tf.setBackend('webgl').catch(() => faceapi.tf.setBackend('cpu'));
+      await faceapi.tf.ready();
+      console.log("Motor inicializado.");
 
       const MODEL_URL = '/models';
       await Promise.all([
@@ -42,10 +38,15 @@ export class Camera implements OnInit, OnDestroy {
         faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
         faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
       ]);
+      
+      console.log("✅ Modelos carregados com sucesso! Atualizando tela...");
       this.modelsLoaded = true;
+      this.cdr.detectChanges(); // FORÇA o Angular a atualizar a tela!
+      
     } catch (err: any) {
       console.error("Erro ao carregar modelos da IA:", err);
       this.loadError = "Erro ao carregar IA: " + err.message;
+      this.cdr.detectChanges();
     }
   }
 
