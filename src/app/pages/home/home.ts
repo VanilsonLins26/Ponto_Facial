@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Camera } from '../../components/camera/camera';
 import { FirebaseService } from '../../services/firebase.service';
 import * as faceapi from 'face-api.js';
@@ -17,7 +17,10 @@ export class Home implements OnInit {
   processing = false;
   locationName: string = '';
 
-  constructor(private firebaseService: FirebaseService) {}
+  constructor(
+    private firebaseService: FirebaseService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   async ngOnInit() {
     this.locationName = this.firebaseService.kioskLocation;
@@ -26,21 +29,22 @@ export class Home implements OnInit {
       const employees = await this.firebaseService.getEmployees();
       if (employees.length === 0) {
         this.statusMessage = "Nenhum funcionário cadastrado. Vá para /admin.";
+        this.cdr.detectChanges();
         return;
       }
 
       const labeledDescriptors = employees.map(emp => {
-        // Converter o array de volta para Float32Array
         const descriptorArray = new Float32Array(emp.descriptor);
         return new faceapi.LabeledFaceDescriptors(emp.name + "||" + emp.id, [descriptorArray]);
       });
 
-      // Distância máxima Euclidiana (0.6 é o padrão, menor = mais rigoroso)
       this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
       this.statusMessage = "Aguardando reconhecimento facial...";
+      this.cdr.detectChanges();
     } catch (error) {
       console.error(error);
       this.statusMessage = "Erro ao conectar com o banco de dados.";
+      this.cdr.detectChanges();
     }
   }
 
@@ -49,6 +53,7 @@ export class Home implements OnInit {
 
     this.processing = true;
     this.statusMessage = "Analisando rosto...";
+    this.cdr.detectChanges();
 
     const match = this.faceMatcher.findBestMatch(descriptor);
 
@@ -56,6 +61,7 @@ export class Home implements OnInit {
       const [name, id] = match.label.split("||");
       this.statusMessage = `Ponto registrado para ${name}!`;
       this.success = true;
+      this.cdr.detectChanges();
 
       // Registrar no Firebase de forma assíncrona
       this.firebaseService.registerClockIn(id, name).catch(err => {
@@ -67,14 +73,17 @@ export class Home implements OnInit {
         this.statusMessage = "Aguardando reconhecimento facial...";
         this.success = false;
         this.processing = false;
+        this.cdr.detectChanges();
       }, 4000);
     } else {
       this.statusMessage = "Rosto desconhecido! Tente novamente.";
       this.success = false;
+      this.cdr.detectChanges();
       
       setTimeout(() => {
         this.statusMessage = "Aguardando reconhecimento facial...";
         this.processing = false;
+        this.cdr.detectChanges();
       }, 2000);
     }
   }
