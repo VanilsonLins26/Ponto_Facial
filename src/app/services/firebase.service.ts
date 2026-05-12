@@ -22,6 +22,12 @@ export class FirebaseService {
   private auth = getAuth(this.app);
 
   currentUser = new BehaviorSubject<User | null>(null);
+  
+  private authStateInitialized = false;
+  private resolveAuthState!: (user: User | null) => void;
+  public authStateReady = new Promise<User | null>((resolve) => {
+    this.resolveAuthState = resolve;
+  });
 
   constructor() {
     // Garante que a sessão seja infinita no dispositivo
@@ -29,6 +35,11 @@ export class FirebaseService {
     
     onAuthStateChanged(this.auth, (user) => {
       this.currentUser.next(user);
+      
+      if (!this.authStateInitialized) {
+        this.authStateInitialized = true;
+        this.resolveAuthState(user);
+      }
     });
   }
 

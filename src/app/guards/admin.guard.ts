@@ -3,17 +3,15 @@ import { Router, type CanActivateFn } from '@angular/router';
 import { FirebaseService } from '../services/firebase.service';
 import { map, take } from 'rxjs';
 
-export const adminGuard: CanActivateFn = (route, state) => {
+export const adminGuard: CanActivateFn = async (route, state) => {
   const firebaseService = inject(FirebaseService);
   const router = inject(Router);
 
-  return firebaseService.currentUser.pipe(
-    take(1),
-    map(user => {
-      if (user && firebaseService.isAdmin) {
-        return true;
-      }
-      return router.createUrlTree(['/login']);
-    })
-  );
+  const user = await firebaseService.authStateReady;
+  
+  if (user && firebaseService.isAdmin) {
+    return true;
+  }
+  
+  return router.createUrlTree(['/login']);
 };
