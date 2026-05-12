@@ -24,6 +24,18 @@ export class Camera implements OnInit, OnDestroy {
 
   async loadModels() {
     try {
+      // Inicialização segura do motor matemático (com fallback para CPU se o WebGL falhar)
+      try {
+        await faceapi.tf.setBackend('webgl');
+        await faceapi.tf.ready();
+        console.log("Motor WebGL inicializado com sucesso.");
+      } catch (backendError) {
+        console.warn("WebGL não suportado pelo navegador ou placa de vídeo. Usando CPU...", backendError);
+        await faceapi.tf.setBackend('cpu');
+        await faceapi.tf.ready();
+        console.log("Motor CPU inicializado com sucesso.");
+      }
+
       const MODEL_URL = '/models';
       await Promise.all([
         faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
