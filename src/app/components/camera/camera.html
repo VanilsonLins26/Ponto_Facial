@@ -1,6 +1,8 @@
 <div class="camera-container">
   @if (!modelsLoaded) {
-    <div class="loading">Carregando inteligência artificial...</div>
+    <div class="loading">
+      {{ loadError ? loadError : 'Carregando inteligência artificial...' }}
+    </div>
   } @else {
     @if (!stream) {
       <button class="btn-primary" (click)="startCamera()">Ativar Câmera</button>

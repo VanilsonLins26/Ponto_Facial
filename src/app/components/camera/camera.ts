@@ -16,19 +16,25 @@ export class Camera implements OnInit, OnDestroy {
   modelsLoaded = false;
   stream: MediaStream | null = null;
   detectionInterval: any;
+  loadError: string = '';
 
   async ngOnInit() {
     await this.loadModels();
-    this.modelsLoaded = true;
   }
 
   async loadModels() {
-    const MODEL_URL = '/models';
-    await Promise.all([
-      faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-    ]);
+    try {
+      const MODEL_URL = '/models';
+      await Promise.all([
+        faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+      ]);
+      this.modelsLoaded = true;
+    } catch (err: any) {
+      console.error("Erro ao carregar modelos da IA:", err);
+      this.loadError = "Erro ao carregar IA: " + err.message;
+    }
   }
 
   async startCamera() {
@@ -36,6 +42,9 @@ export class Camera implements OnInit, OnDestroy {
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
         this.videoElement.nativeElement.srcObject = this.stream;
+        
+        // Forçar a reprodução
+        await this.videoElement.nativeElement.play().catch(e => console.error("Play error:", e));
       } catch (err) {
         console.error("Error accessing camera: ", err);
       }
@@ -53,26 +62,41 @@ export class Camera implements OnInit, OnDestroy {
   }
 
   onVideoPlay() {
+    console.log("Evento (play) da câmera disparado!");
     const video = this.videoElement.nativeElement;
     const canvas = this.canvasElement.nativeElement;
     
+    // Assegurar que o vídeo tem dimensões carregadas
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+       console.warn("Vídeo sem dimensões, aguardando...");
+       setTimeout(() => this.onVideoPlay(), 500);
+       return;
+    }
+
     faceapi.matchDimensions(canvas, video);
 
     this.detectionInterval = setInterval(async () => {
-      const detections = await faceapi.detectSingleFace(video)
-        .withFaceLandmarks()
-        .withFaceDescriptor();
+      try {
+        const detections = await faceapi.detectSingleFace(video)
+          .withFaceLandmarks()
+          .withFaceDescriptor();
 
-      if (detections) {
-        const resizedDetections = faceapi.resizeResults(detections, { width: video.videoWidth, height: video.videoHeight });
-        const ctx = canvas.getContext('2d');
-        if(ctx) {
-           ctx.clearRect(0, 0, canvas.width, canvas.height);
-           faceapi.draw.drawDetections(canvas, resizedDetections);
-           faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+        if (detections) {
+          console.log("✅ Rosto detectado com sucesso!");
+          const resizedDetections = faceapi.resizeResults(detections, { width: video.videoWidth, height: video.videoHeight });
+          const ctx = canvas.getContext('2d');
+          if(ctx) {
+             ctx.clearRect(0, 0, canvas.width, canvas.height);
+             faceapi.draw.drawDetections(canvas, resizedDetections);
+             faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+          }
+          
+          this.faceDetected.emit(detections.descriptor);
+        } else {
+          console.log("Procurando rosto na imagem...");
         }
-        
-        this.faceDetected.emit(detections.descriptor);
+      } catch (error) {
+        console.error("Erro interno do face-api:", error);
       }
     }, 1000);
   }
@@ -81,3 +105,4 @@ export class Camera implements OnInit, OnDestroy {
     this.stopCamera();
   }
 }
+
