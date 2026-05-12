@@ -1,0 +1,230 @@
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 40px;
+}
+
+.header-titles h1 {
+  font-size: 2.5rem;
+  margin-bottom: 5px;
+}
+
+.header-titles p {
+  color: var(--text-muted);
+}
+
+.main-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  max-width: 1200px;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .main-panel {
+    grid-template-columns: 1fr;
+  }
+  .admin-header {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+}
+
+.section-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-column h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: var(--secondary-color);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 10px;
+}
+
+.mt-30 {
+  margin-top: 30px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin-bottom: 15px;
+  margin-top: 15px;
+  transition: all 0.3s ease;
+}
+
+.status-indicator.active {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: var(--success-color);
+  font-weight: bold;
+}
+
+.btn-secondary, .btn-outline {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--text-muted);
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+
+.btn-outline {
+  border-color: var(--error-color);
+  color: var(--error-color);
+  margin-bottom: 0;
+}
+
+.btn-outline:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 25px;
+}
+
+.input-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.input-group input {
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  color: #fff;
+  border: none;
+  padding: 15px;
+  font-size: 1.2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.btn-primary:disabled {
+  background: #333;
+  color: #666;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.success-message {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: rgba(16, 185, 129, 0.2);
+  color: var(--success-color);
+  border-radius: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* List and Table Styles */
+.list-container {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 15px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.empty-state {
+  color: var(--text-muted);
+  text-align: center;
+  font-style: italic;
+  padding: 20px;
+}
+
+.employee-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.employee-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.employee-list li:last-child {
+  border-bottom: none;
+}
+
+.emp-id {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.logs-table th {
+  text-align: left;
+  padding: 10px;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.logs-table td {
+  padding: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.logs-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.location-tag {
+  background: rgba(79, 172, 254, 0.2);
+  color: #4facfe;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+

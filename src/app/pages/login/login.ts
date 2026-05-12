@@ -1,0 +1,46 @@
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { FirebaseService } from '../../services/firebase.service';
+
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './login.html',
+  styleUrl: './login.css'
+})
+export class Login {
+  email: string = '';
+  pass: string = '';
+  errorMessage: string = '';
+  loading = false;
+
+  constructor(private firebaseService: FirebaseService, private router: Router) {}
+
+  async onLogin() {
+    if (!this.email || !this.pass) return;
+
+    this.loading = true;
+    this.errorMessage = '';
+
+    try {
+      await this.firebaseService.login(this.email, this.pass);
+      
+      // Redirecionamento Inteligente baseado no Papel
+      if (this.firebaseService.isAdmin) {
+        this.router.navigate(['/admin']);
+      } else {
+        this.router.navigate(['/']);
+      }
+
+    } catch (error: any) {
+      this.errorMessage = "Credenciais inválidas. Verifique seu e-mail e senha.";
+      console.error(error);
+    } finally {
+      this.loading = false;
+    }
+  }
+}
+

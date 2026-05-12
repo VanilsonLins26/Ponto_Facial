@@ -1,0 +1,49 @@
+<div class="container login-layout">
+  <div class="glass-panel login-panel">
+    <div class="header">
+      <h1 class="text-gradient">Acesso Gestor</h1>
+      <p>Área restrita para administração do ponto</p>
+    </div>
+
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+      <div class="input-group">
+        <label for="email">E-mail</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          [(ngModel)]="email" 
+          placeholder="admin@empresa.com.br"
+          required>
+      </div>
+
+      <div class="input-group">
+        <label for="password">Senha</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          [(ngModel)]="pass" 
+          placeholder="••••••••"
+          required>
+      </div>
+
+      @if (errorMessage) {
+        <div class="error-message">
+          {{ errorMessage }}
+        </div>
+      }
+
+      <button 
+        type="submit" 
+        class="btn-primary" 
+        [disabled]="!loginForm.form.valid || loading">
+        {{ loading ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+    
+    <div class="back-link">
+      <a routerLink="/">Voltar para o Ponto Eletrônico</a>
+    </div>
+  </div>
+</div>

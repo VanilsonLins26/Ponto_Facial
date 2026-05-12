@@ -1,0 +1,15 @@
+<div class="container home-layout">
+  <div class="header">
+    <h1 class="text-gradient">Ponto Eletrônico</h1>
+    <p>Aproxime o rosto para registrar seu ponto</p>
+    <div class="location-badge">Catraca: {{ locationName }}</div>
+  </div>
+
+  <div class="glass-panel main-panel">
+    <app-camera (faceDetected)="onFaceDetected($event)"></app-camera>
+    
+    <div class="status-bar" [class.success]="success">
+      {{ statusMessage }}
+    </div>
+  </div>
+</div>

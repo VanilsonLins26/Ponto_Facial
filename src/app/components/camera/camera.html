@@ -1,0 +1,14 @@
+<div class="camera-container">
+  @if (!modelsLoaded) {
+    <div class="loading">Carregando inteligência artificial...</div>
+  } @else {
+    @if (!stream) {
+      <button class="btn-primary" (click)="startCamera()">Ativar Câmera</button>
+    }
+    
+    <div class="video-wrapper">
+      <video #videoElement autoplay muted playsinline (play)="onVideoPlay()" [style.display]="stream ? 'block' : 'none'"></video>
+      <canvas #canvasElement [style.display]="stream ? 'block' : 'none'"></canvas>
+    </div>
+  }
+</div>

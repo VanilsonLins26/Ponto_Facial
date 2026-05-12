@@ -1,0 +1,96 @@
+<div class="container admin-layout">
+  <div class="admin-header">
+    <div class="header-titles">
+      <h1 class="text-gradient">Área Administrativa</h1>
+      <p>Gestão de Ponto e Funcionários</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/" class="btn-outline" style="text-decoration: none; display: inline-block; text-align: center;">Ir para Catraca (Ponto)</a>
+      <button class="btn-outline" (click)="logout()" style="margin-left: 10px;">Sair do Painel</button>
+    </div>
+  </div>
+
+  <div class="glass-panel main-panel">
+    <!-- Cadastro -->
+    <div class="section-column">
+      <h3>Cadastrar Novo Funcionário</h3>
+      <div class="camera-section">
+        <app-camera (faceDetected)="onFaceDetected($event)"></app-camera>
+      </div>
+      
+      <div class="form-section">
+        <div class="status-indicator" [class.active]="capturedDescriptor">
+          <span class="icon"></span>
+          {{ capturedDescriptor ? 'Rosto Capturado com Sucesso!' : 'Aguardando Rosto...' }}
+        </div>
+
+        @if (capturedDescriptor) {
+          <button class="btn-secondary" (click)="resetCapture()">Capturar Novamente</button>
+        }
+
+        <div class="input-group">
+          <label for="name">Nome Completo</label>
+          <input type="text" id="name" [(ngModel)]="employeeName" placeholder="Ex: João da Silva">
+        </div>
+
+        <button 
+          class="btn-primary" 
+          [disabled]="!employeeName || !capturedDescriptor || saving"
+          (click)="saveEmployee()">
+          {{ saving ? 'Salvando...' : 'Salvar Cadastro' }}
+        </button>
+
+        @if (savedMessage) {
+          <div class="success-message">
+            {{ savedMessage }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Listas e Logs -->
+    <div class="section-column data-section">
+      <h3>Funcionários Cadastrados</h3>
+      <div class="list-container">
+        @if (employees.length === 0) {
+          <p class="empty-state">Nenhum funcionário cadastrado ainda.</p>
+        } @else {
+          <ul class="employee-list">
+            @for (emp of employees; track emp.id) {
+              <li>
+                <span class="emp-name">{{ emp.name }}</span>
+                <span class="emp-id">ID: {{ emp.id | slice:0:6 }}...</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <h3 class="mt-30">Registros de Ponto (Logs)</h3>
+      <div class="list-container logs-container">
+        @if (logs.length === 0) {
+          <p class="empty-state">Nenhum registro de ponto encontrado.</p>
+        } @else {
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>Funcionário</th>
+                <th>Local</th>
+                <th>Data e Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (log of logs; track log.id) {
+                <tr>
+                  <td>{{ log.employeeName }}</td>
+                  <td><span class="location-tag">{{ log.location }}</span></td>
+                  <td>{{ log.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+  </div>
+</div>
