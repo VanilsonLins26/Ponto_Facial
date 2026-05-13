@@ -57,9 +57,12 @@
         } @else {
           <ul class="employee-list">
             @for (emp of employees; track emp.id) {
-              <li>
-                <span class="emp-name">{{ emp.name }}</span>
-                <span class="emp-id">ID: {{ emp.id | slice:0:6 }}...</span>
+              <li style="align-items: center;">
+                <div style="display: flex; flex-direction: column;">
+                  <span class="emp-name" style="font-weight: 600;">{{ emp.name }}</span>
+                  <span class="emp-id">ID: {{ emp.id | slice:0:6 }}...</span>
+                </div>
+                <button class="btn-outline" style="padding: 5px 12px; font-size: 0.8rem; border-color: var(--primary-color); color: var(--primary-color);" (click)="openEmployeeReport(emp.name)">Ver Espelho</button>
               </li>
             }
           </ul>
@@ -76,6 +79,7 @@
               <tr>
                 <th>Funcionário</th>
                 <th>Local</th>
+                <th>Status</th>
                 <th>Data e Hora</th>
               </tr>
             </thead>
@@ -84,6 +88,7 @@
                 <tr>
                   <td>{{ log.employeeName }}</td>
                   <td><span class="location-tag">{{ log.location }}</span></td>
+                  <td><span class="status-tag" [ngClass]="log.status === 'Entrada' ? 'status-in' : (log.status === 'Saída' ? 'status-out' : 'status-mid')">{{ log.status }}</span></td>
                   <td>{{ log.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}</td>
                 </tr>
               }
@@ -93,4 +98,121 @@
       </div>
     </div>
   </div>
+
+  <!-- Relatório de Horas -->
+  <div class="glass-panel mt-30 report-panel" style="width: 100%; max-width: 1200px;">
+    <h3>Relatório de Horas Trabalhadas</h3>
+    <div class="list-container logs-container" style="max-height: 400px;">
+      @if (reports.length === 0) {
+        <p class="empty-state">Nenhum relatório gerado ainda.</p>
+      } @else {
+        <table class="logs-table report-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Funcionário</th>
+              <th>Entrada</th>
+              <th>Saída Almoço</th>
+              <th>Retorno Almoço</th>
+              <th>Saída</th>
+              <th>Total Trabalhado</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (report of reports; track report.date + report.employeeName) {
+              <tr>
+                <td style="font-weight: 600;">{{ report.date }}</td>
+                <td>{{ report.employeeName }}</td>
+                <td class="time-cell">{{ report.in ? (report.in | date:'HH:mm') : '--:--' }}</td>
+                <td class="time-cell">{{ report.lunchOut ? (report.lunchOut | date:'HH:mm') : '--:--' }}</td>
+                <td class="time-cell">{{ report.lunchIn ? (report.lunchIn | date:'HH:mm') : '--:--' }}</td>
+                <td class="time-cell">{{ report.out ? (report.out | date:'HH:mm') : '--:--' }}</td>
+                <td class="total-time">{{ report.totalWorkedFormatted }}</td>
+                <td>
+                  <span class="status-tag" 
+                    [ngClass]="{
+                      'status-in': report.statusText === 'Completo',
+                      'status-out': report.statusText === 'Falta Ponto' || report.statusText === 'Sem Almoço',
+                      'status-mid': report.statusText === 'Trabalhando' || report.statusText === 'Em Almoço'
+                    }">
+                    {{ report.statusText }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </div>
 </div>
+
+<!-- Modal de Espelho de Ponto Individual -->
+@if (selectedEmployeeForReport) {
+  <div class="modal-overlay" (click)="closeEmployeeReport()">
+    <div class="modal-content glass-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Espelho de Ponto: <span class="text-gradient">{{ selectedEmployeeForReport }}</span></h2>
+        <button class="modal-close" (click)="closeEmployeeReport()">×</button>
+      </div>
+
+      <div class="modal-total">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Total na Semana</span>
+          <select 
+            class="week-select" 
+            (change)="onWeekChange($event)" 
+            style="padding: 8px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; cursor: pointer; font-family: inherit;">
+            @for (week of availableWeeks; track week.label; let i = $index) {
+              <option [value]="i" style="background: var(--surface-color, #1a1a1a); color: white;">{{ week.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="total-hours-big">{{ employeeTotalHours }}</div>
+      </div>
+
+      <div class="list-container logs-container" style="max-height: 350px; margin-top: 20px;">
+        @if (filteredEmployeeReports.length === 0) {
+          <p class="empty-state">Nenhum registro encontrado para esta semana.</p>
+        } @else {
+          <table class="logs-table report-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Entrada</th>
+                <th>Saída Almoço</th>
+                <th>Retorno Almoço</th>
+                <th>Saída</th>
+                <th>Diária</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (report of filteredEmployeeReports; track report.date) {
+                <tr>
+                  <td style="font-weight: 600;">{{ report.date }}</td>
+                  <td class="time-cell">{{ report.in ? (report.in | date:'HH:mm') : '--:--' }}</td>
+                  <td class="time-cell">{{ report.lunchOut ? (report.lunchOut | date:'HH:mm') : '--:--' }}</td>
+                  <td class="time-cell">{{ report.lunchIn ? (report.lunchIn | date:'HH:mm') : '--:--' }}</td>
+                  <td class="time-cell">{{ report.out ? (report.out | date:'HH:mm') : '--:--' }}</td>
+                  <td class="total-time">{{ report.totalWorkedFormatted }}</td>
+                  <td>
+                    <span class="status-tag" 
+                      [ngClass]="{
+                        'status-in': report.statusText === 'Completo',
+                        'status-out': report.statusText === 'Falta Ponto' || report.statusText === 'Sem Almoço',
+                        'status-mid': report.statusText === 'Trabalhando' || report.statusText === 'Em Almoço'
+                      }">
+                      {{ report.statusText }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+  </div>
+}

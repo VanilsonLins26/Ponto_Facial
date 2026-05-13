@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp, query, orderBy, where } from 'firebase/firestore';
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, User, browserLocalPersistence, setPersistence } from 'firebase/auth';
 import { BehaviorSubject } from 'rxjs';
 
@@ -93,14 +93,41 @@ export class FirebaseService {
     }));
   }
 
-  async registerClockIn(employeeId: string, employeeName: string) {
+  async registerClockIn(employeeId: string, employeeName: string): Promise<{status: string, time: string}> {
     const logsCol = collection(this.db, 'logs');
+    
+    // Pega a data de hoje formatada (ex: "12/05/2026")
+    const today = new Date();
+    const dateString = today.toLocaleDateString('pt-BR');
+    const timeString = today.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    // Busca quantos pontos o funcionário já bateu HOJE
+    // Usamos dateString para evitar necessidade de criar Índice Composto no Firebase
+    const qCount = query(
+      logsCol, 
+      where('employeeId', '==', employeeId),
+      where('dateString', '==', dateString)
+    );
+    
+    const snapshot = await getDocs(qCount);
+    const punchCount = snapshot.size;
+
+    let status = 'Extra';
+    if (punchCount === 0) status = 'Entrada';
+    else if (punchCount === 1) status = 'Saída Almoço';
+    else if (punchCount === 2) status = 'Retorno Almoço';
+    else if (punchCount === 3) status = 'Saída';
+
     await addDoc(logsCol, {
       employeeId,
       employeeName,
       location: this.kioskLocation,
-      timestamp: serverTimestamp()
+      timestamp: serverTimestamp(),
+      dateString,
+      status
     });
+
+    return { status, time: timeString };
   }
 
   async getLogs() {
@@ -113,6 +140,7 @@ export class FirebaseService {
         id: doc.id,
         employeeName: data['employeeName'],
         location: data['location'] || 'N/A',
+        status: data['status'] || 'Entrada',
         timestamp: data['timestamp']?.toDate() || new Date()
       };
     });

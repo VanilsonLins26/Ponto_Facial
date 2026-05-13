@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { Camera } from '../../components/camera/camera';
 import { FirebaseService } from '../../services/firebase.service';
 import * as faceapi from 'face-api.js';
@@ -11,6 +11,8 @@ import * as faceapi from 'face-api.js';
   styleUrl: './home.css'
 })
 export class Home implements OnInit {
+  @ViewChild(Camera) cameraComponent!: Camera;
+  
   statusMessage = "Carregando funcionários...";
   success = false;
   faceMatcher: faceapi.FaceMatcher | null = null;
@@ -59,22 +61,33 @@ export class Home implements OnInit {
 
     if (match.label !== 'unknown') {
       const [name, id] = match.label.split("||");
-      this.statusMessage = `Ponto registrado para ${name}!`;
-      this.success = true;
+      
+      // Desligar câmera imediatamente para economizar
+      if (this.cameraComponent) {
+        this.cameraComponent.stopCamera();
+      }
+      
+      this.statusMessage = `Salvando ponto para ${name}...`;
       this.cdr.detectChanges();
 
-      // Registrar no Firebase de forma assíncrona
-      this.firebaseService.registerClockIn(id, name).catch(err => {
-         console.error("Erro ao registrar no banco: ", err);
-      });
+      try {
+        const result = await this.firebaseService.registerClockIn(id, name);
+        this.statusMessage = `${name} | ${result.status} às ${result.time}`;
+        this.success = true;
+        this.cdr.detectChanges();
+      } catch (err) {
+        console.error("Erro ao registrar no banco: ", err);
+        this.statusMessage = `Erro ao salvar o ponto. Tente novamente.`;
+        this.cdr.detectChanges();
+      }
 
-      // Trava por 4 segundos para evitar duplo registro
+      // Trava por 5 segundos para o funcionário ler a mensagem antes de reiniciar
       setTimeout(() => {
         this.statusMessage = "Aguardando reconhecimento facial...";
         this.success = false;
         this.processing = false;
         this.cdr.detectChanges();
-      }, 4000);
+      }, 5000);
     } else {
       this.statusMessage = "Rosto desconhecido! Tente novamente.";
       this.success = false;

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -17,13 +17,18 @@ export class Login {
   errorMessage: string = '';
   loading = false;
 
-  constructor(private firebaseService: FirebaseService, private router: Router) {}
+  constructor(
+    private firebaseService: FirebaseService, 
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   async onLogin() {
     if (!this.email || !this.pass) return;
 
     this.loading = true;
     this.errorMessage = '';
+    this.cdr.detectChanges();
 
     try {
       await this.firebaseService.login(this.email, this.pass);
@@ -40,6 +45,7 @@ export class Login {
       console.error(error);
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 }
