@@ -26,6 +26,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* Utilities */
@@ -43,6 +45,12 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius);
   padding: 30px;
+}
+
+@media (max-width: 768px) {
+  .glass-panel {
+    padding: 15px;
+  }
 }
 
 h1, h2, h3 {

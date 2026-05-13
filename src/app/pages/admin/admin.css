@@ -122,6 +122,8 @@
   color: #fff;
   font-size: 1rem;
   transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input-group input:focus {
