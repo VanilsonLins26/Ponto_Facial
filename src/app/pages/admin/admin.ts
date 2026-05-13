@@ -30,6 +30,7 @@ export class Admin implements OnInit {
   capturedDescriptor: Float32Array | null = null;
   savedMessage: string = '';
   saving: boolean = false;
+  showCadastro: boolean = false;
   
   employees: any[] = [];
   logs: any[] = [];
@@ -209,8 +210,9 @@ export class Admin implements OnInit {
       
       setTimeout(() => {
         this.savedMessage = '';
+        this.showCadastro = false;
         this.cdr.detectChanges();
-      }, 4000);
+      }, 2000);
     } catch (error) {
       console.error("Erro ao salvar no Firebase:", error);
       alert("Erro ao salvar dados.");
@@ -223,6 +225,14 @@ export class Admin implements OnInit {
   resetCapture() {
     this.capturedDescriptor = null;
     this.cdr.detectChanges();
+  }
+
+  toggleCadastro() {
+    this.showCadastro = !this.showCadastro;
+    if (!this.showCadastro) {
+      this.resetCapture();
+      this.employeeName = '';
+    }
   }
 
   async logout() {
