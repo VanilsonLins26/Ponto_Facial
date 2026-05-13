@@ -33,11 +33,13 @@ export class Login {
     try {
       const cred = await this.firebaseService.login(this.email, this.pass);
       
+      const emailLogado = cred.user.email?.toLowerCase().trim();
+
       // Força a atualização síncrona para que os Guards leiam corretamente sem atraso
       this.firebaseService.currentUser.next(cred.user);
 
       // Redirecionamento Inteligente baseado no Papel lendo diretamente do email autenticado
-      if (cred.user.email === 'admin@admin.com') {
+      if (emailLogado?.startsWith('admin')) {
         this.router.navigate(['/admin']);
       } else {
         this.router.navigate(['/']);

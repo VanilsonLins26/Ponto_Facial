@@ -14,7 +14,8 @@ export const authGuard: CanActivateFn = async (route, state) => {
   const auth = getAuth();
   
   if (auth.currentUser) {
-    if (auth.currentUser.email === 'admin@admin.com' && state.url === '/') {
+    const email = auth.currentUser.email?.toLowerCase().trim();
+    if (email?.startsWith('admin') && state.url === '/') {
       return router.createUrlTree(['/admin']);
     }
     return true;

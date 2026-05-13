@@ -86,13 +86,23 @@
             <tbody>
               @for (log of logs; track log.id) {
                 <tr>
-                  <td>{{ log.employeeName }}</td>
-                  <td><span class="location-tag">{{ log.location }}</span></td>
-                  <td><span class="status-tag" [ngClass]="log.status === 'Entrada' ? 'status-in' : (log.status === 'Saída' ? 'status-out' : 'status-mid')">{{ log.status }}</span></td>
-                  <td>{{ log.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                  <td data-label="Funcionário" style="font-weight: 600;">{{ log.employeeName }}</td>
+                  <td data-label="Local"><span class="location-tag">{{ log.location }}</span></td>
+                  <td data-label="Status">
+                    <span class="status-tag" 
+                      [ngClass]="{
+                        'status-in': log.status === 'Entrada',
+                        'status-out': log.status === 'Saída' || log.status === 'Saída Almoço',
+                        'status-mid': log.status === 'Retorno Almoço'
+                      }">
+                      {{ log.status }}
+                    </span>
+                  </td>
+                  <td data-label="Data e Hora" style="color: var(--text-muted); font-size: 0.9rem;">
+                    {{ log.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}
+                  </td>
                 </tr>
-              }
-            </tbody>
+              }</tbody>
           </table>
         }
       </div>
@@ -122,14 +132,14 @@
           <tbody>
             @for (report of reports; track report.date + report.employeeName) {
               <tr>
-                <td style="font-weight: 600;">{{ report.date }}</td>
-                <td>{{ report.employeeName }}</td>
-                <td class="time-cell">{{ report.in ? (report.in | date:'HH:mm') : '--:--' }}</td>
-                <td class="time-cell">{{ report.lunchOut ? (report.lunchOut | date:'HH:mm') : '--:--' }}</td>
-                <td class="time-cell">{{ report.lunchIn ? (report.lunchIn | date:'HH:mm') : '--:--' }}</td>
-                <td class="time-cell">{{ report.out ? (report.out | date:'HH:mm') : '--:--' }}</td>
-                <td class="total-time">{{ report.totalWorkedFormatted }}</td>
-                <td>
+                <td data-label="Data" style="font-weight: 600;">{{ report.date }}</td>
+                <td data-label="Funcionário">{{ report.employeeName }}</td>
+                <td data-label="Entrada" class="time-cell">{{ report.in ? (report.in | date:'HH:mm') : '--:--' }}</td>
+                <td data-label="Saída Almoço" class="time-cell">{{ report.lunchOut ? (report.lunchOut | date:'HH:mm') : '--:--' }}</td>
+                <td data-label="Retorno Almoço" class="time-cell">{{ report.lunchIn ? (report.lunchIn | date:'HH:mm') : '--:--' }}</td>
+                <td data-label="Saída" class="time-cell">{{ report.out ? (report.out | date:'HH:mm') : '--:--' }}</td>
+                <td data-label="Diária" class="total-time">{{ report.totalWorkedFormatted }}</td>
+                <td data-label="Status">
                   <span class="status-tag" 
                     [ngClass]="{
                       'status-in': report.statusText === 'Completo',
@@ -191,13 +201,13 @@
             <tbody>
               @for (report of filteredEmployeeReports; track report.date) {
                 <tr>
-                  <td style="font-weight: 600;">{{ report.date }}</td>
-                  <td class="time-cell">{{ report.in ? (report.in | date:'HH:mm') : '--:--' }}</td>
-                  <td class="time-cell">{{ report.lunchOut ? (report.lunchOut | date:'HH:mm') : '--:--' }}</td>
-                  <td class="time-cell">{{ report.lunchIn ? (report.lunchIn | date:'HH:mm') : '--:--' }}</td>
-                  <td class="time-cell">{{ report.out ? (report.out | date:'HH:mm') : '--:--' }}</td>
-                  <td class="total-time">{{ report.totalWorkedFormatted }}</td>
-                  <td>
+                  <td data-label="Data" style="font-weight: 600;">{{ report.date }}</td>
+                  <td data-label="Entrada" class="time-cell">{{ report.in ? (report.in | date:'HH:mm') : '--:--' }}</td>
+                  <td data-label="Saída Almoço" class="time-cell">{{ report.lunchOut ? (report.lunchOut | date:'HH:mm') : '--:--' }}</td>
+                  <td data-label="Retorno Almoço" class="time-cell">{{ report.lunchIn ? (report.lunchIn | date:'HH:mm') : '--:--' }}</td>
+                  <td data-label="Saída" class="time-cell">{{ report.out ? (report.out | date:'HH:mm') : '--:--' }}</td>
+                  <td data-label="Diária" class="total-time">{{ report.totalWorkedFormatted }}</td>
+                  <td data-label="Status">
                     <span class="status-tag" 
                       [ngClass]="{
                         'status-in': report.statusText === 'Completo',
