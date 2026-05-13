@@ -1,15 +1,19 @@
 import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
 import { FirebaseService } from '../services/firebase.service';
-import { map, take } from 'rxjs';
+import { getAuth } from 'firebase/auth';
 
 export const authGuard: CanActivateFn = async (route, state) => {
   const firebaseService = inject(FirebaseService);
   const router = inject(Router);
 
-  const user = await firebaseService.authStateReady;
+  // Aguarda a inicialização do Firebase no primeiro carregamento
+  await firebaseService.authStateReady;
   
-  if (user) {
+  // Pega o estado atual e síncrono do Firebase
+  const auth = getAuth();
+  
+  if (auth.currentUser) {
     return true;
   }
   

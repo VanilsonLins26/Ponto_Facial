@@ -167,6 +167,7 @@
   padding: 15px;
   max-height: 250px;
   overflow-y: auto;
+  overflow-x: auto;
 }
 
 .empty-state {
@@ -208,11 +209,13 @@
   padding: 10px;
   color: var(--text-muted);
   border-bottom: 1px solid rgba(255,255,255,0.1);
+  white-space: nowrap;
 }
 
 .logs-table td {
   padding: 10px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
+  white-space: nowrap;
 }
 
 .logs-table tbody tr:last-child td {

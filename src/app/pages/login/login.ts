@@ -31,10 +31,13 @@ export class Login {
     this.cdr.detectChanges();
 
     try {
-      await this.firebaseService.login(this.email, this.pass);
+      const cred = await this.firebaseService.login(this.email, this.pass);
       
-      // Redirecionamento Inteligente baseado no Papel
-      if (this.firebaseService.isAdmin) {
+      // Força a atualização síncrona para que os Guards leiam corretamente sem atraso
+      this.firebaseService.currentUser.next(cred.user);
+
+      // Redirecionamento Inteligente baseado no Papel lendo diretamente do email autenticado
+      if (cred.user.email === 'admin@admin.com') {
         this.router.navigate(['/admin']);
       } else {
         this.router.navigate(['/']);
