@@ -104,19 +104,21 @@ export class Camera implements OnInit, OnDestroy {
           const faceCenterX = box.x + box.width / 2;
           const faceCenterY = box.y + box.height / 2;
           
-          // Centro do vídeo
+          // Centro do vídeo (centro da elipse)
           const videoCenterX = videoWidth / 2;
           const videoCenterY = videoHeight / 2;
           
-          // Distância do centro do rosto ao centro do vídeo
-          const distance = Math.sqrt(Math.pow(faceCenterX - videoCenterX, 2) + Math.pow(faceCenterY - videoCenterY, 2));
+          // Raio X (horizontal) da elipse: metade de 70% da largura (pois o guia tem 70% de largura)
+          const rx = videoWidth * 0.35;
+          // Raio Y (vertical) da elipse: o guia tem aspect-ratio 3/4 (altura é 4/3 da largura)
+          const ry = rx * (4 / 3);
           
-          // Raio da área segura (diâmetro de 70% da menor dimensão)
-          const safeRadius = Math.min(videoWidth, videoHeight) * 0.35;
+          // Equação da elipse: (x - cx)² / rx² + (y - cy)² / ry² <= 1
+          const ellipseValue = Math.pow((faceCenterX - videoCenterX) / rx, 2) + Math.pow((faceCenterY - videoCenterY) / ry, 2);
           
-          // O rosto está dentro da área segura e tem um tamanho razoável?
-          const isInside = distance <= safeRadius;
-          const isLargeEnough = box.width >= (Math.min(videoWidth, videoHeight) * 0.25);
+          // O rosto está dentro da elipse e tem um tamanho razoável?
+          const isInside = ellipseValue <= 1;
+          const isLargeEnough = box.width >= (videoWidth * 0.25);
 
           if (isInside && isLargeEnough) {
             if (!this.isFaceCentered) {
