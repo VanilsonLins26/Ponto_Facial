@@ -17,6 +17,7 @@ export class Camera implements OnInit, OnDestroy {
   stream: MediaStream | null = null;
   detectionInterval: any;
   loadError: string = '';
+  isFaceCentered: boolean = false;
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -95,17 +96,60 @@ export class Camera implements OnInit, OnDestroy {
           .withFaceDescriptor();
 
         if (detections) {
-          console.log("✅ Rosto detectado com sucesso!");
-          const resizedDetections = faceapi.resizeResults(detections, { width: video.videoWidth, height: video.videoHeight });
-          const ctx = canvas.getContext('2d');
-          if(ctx) {
-             ctx.clearRect(0, 0, canvas.width, canvas.height);
-             faceapi.draw.drawDetections(canvas, resizedDetections);
-             faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-          }
+          const videoWidth = video.videoWidth;
+          const videoHeight = video.videoHeight;
+          const box = detections.detection.box;
           
-          this.faceDetected.emit(detections.descriptor);
+          // Centro do rosto detectado
+          const faceCenterX = box.x + box.width / 2;
+          const faceCenterY = box.y + box.height / 2;
+          
+          // Centro do vídeo
+          const videoCenterX = videoWidth / 2;
+          const videoCenterY = videoHeight / 2;
+          
+          // Distância do centro do rosto ao centro do vídeo
+          const distance = Math.sqrt(Math.pow(faceCenterX - videoCenterX, 2) + Math.pow(faceCenterY - videoCenterY, 2));
+          
+          // Raio da área segura (diâmetro de 70% da menor dimensão)
+          const safeRadius = Math.min(videoWidth, videoHeight) * 0.35;
+          
+          // O rosto está dentro da área segura e tem um tamanho razoável?
+          const isInside = distance <= safeRadius;
+          const isLargeEnough = box.width >= (Math.min(videoWidth, videoHeight) * 0.25);
+
+          if (isInside && isLargeEnough) {
+            if (!this.isFaceCentered) {
+              this.isFaceCentered = true;
+              this.cdr.detectChanges();
+            }
+            
+            console.log("✅ Rosto detectado e centralizado!");
+            const resizedDetections = faceapi.resizeResults(detections, { width: videoWidth, height: videoHeight });
+            const ctx = canvas.getContext('2d');
+            if(ctx) {
+               ctx.clearRect(0, 0, canvas.width, canvas.height);
+               faceapi.draw.drawDetections(canvas, resizedDetections);
+               faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+            }
+            
+            this.faceDetected.emit(detections.descriptor);
+          } else {
+            if (this.isFaceCentered) {
+              this.isFaceCentered = false;
+              this.cdr.detectChanges();
+            }
+            const ctx = canvas.getContext('2d');
+            if(ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+            console.log("Rosto fora do centro ou muito pequeno...");
+          }
         } else {
+          if (this.isFaceCentered) {
+            this.isFaceCentered = false;
+            this.cdr.detectChanges();
+          }
+          const ctx = canvas.getContext('2d');
+          if(ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
           console.log("Procurando rosto na imagem...");
         }
       } catch (error) {

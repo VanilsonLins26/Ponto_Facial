@@ -32,6 +32,35 @@ canvas {
   height: 100%;
   pointer-events: none;
   transform: scaleX(-1);
+  z-index: 5;
+}
+
+.camera-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.camera-guide {
+  width: 70%;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.85); /* Cria o fundo escuro ao redor */
+  border: 3px dashed rgba(255, 255, 255, 0.6);
+  transition: all 0.3s ease;
+}
+
+.camera-guide.face-detected {
+  border-color: #00ff00;
+  border-style: solid;
+  background-color: rgba(0, 255, 0, 0.15);
 }
 
 .loading {
